@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 20px auto;
+    }
+
+    form input, form button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .btn {
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .edit-btn {
+      background-color: orange;
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: red;
+      color: white;
+    }
+
+    .message {
+      text-align: center;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Student Management System</h1>
+
+  <form id="studentForm">
+    <input type="text" id="name" placeholder="Student Name" required />
+    <input type="text" id="roll" placeholder="Roll Number" required />
+    <input type="text" id="class" placeholder="Class" required />
+    <input type="number" id="attendance" placeholder="Attendance (%)" required />
+    <input type="text" id="grade" placeholder="Grade (A/B/C etc.)" required />
+    <button type="submit">Add / Update Student</button>
+  </form>
+
+  <div class="message" id="message"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Roll No</th>
+        <th>Class</th>
+        <th>Attendance</th>
+        <th>Grade</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById('studentForm');
+    const studentTable = document.getElementById('studentTable');
+    const message = document.getElementById('message');
+
+    let students = JSON.parse(localStorage.getItem("students")) || [];
+    let editingIndex = null;
+
+    window.onload = function () {
+      displayStudents();
+    };
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const roll = document.getElementById('roll').value.trim();
+      const className = document.getElementById('class').value.trim();
+      const attendance = document.getElementById('attendance').value.trim();
+      const grade = document.getElementById('grade').value.trim();
+
+      const student = { name, roll, class: className, attendance, grade };
+
+      if (editingIndex === null) {
+        students.push(student);
+        showMessage("Student added successfully!");
+      } else {
+        students[editingIndex] = student;
+        editingIndex = null;
+        showMessage("Student updated successfully!");
+      }
+
+      localStorage.setItem("students", JSON.stringify(students));
+      form.reset();
+      displayStudents();
+    });
+
+    function displayStudents() {
+      studentTable.innerHTML = students.map((s, index) => `
+        <tr>
+          <td>${s.name}</td>
+          <td>${s.roll}</td>
+          <td>${s.class}</td>
+          <td>${s.attendance}%</td>
+          <td>${s.grade}</td>
+          <td>
+            <button class="btn edit-btn" onclick="editStudent(${index})">Edit</button>
+            <button class="btn delete-btn" onclick="deleteStudent(${index})">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function editStudent(index) {
+      const s = students[index];
+      document.getElementById('name').value = s.name;
+      document.getElementById('roll').value = s.roll;
+      document.getElementById('class').value = s.class;
+      document.getElementById('attendance').value = s.attendance;
+      document.getElementById('grade').value = s.grade;
+      editingIndex = index;
+    }
+
+    function deleteStudent(index) {
+      if (confirm("Are you sure you want to delete this student?")) {
+        students.splice(index, 1);
+        localStorage.setItem("students", JSON.stringify(students));
+        displayStudents();
+        showMessage("Student deleted successfully!");
+      }
+    }
+
+    function showMessage(text) {
+      message.textContent = text;
+      setTimeout(() => message.textContent = "", 2000);
+    }
+  </script>
+
+</body>
+</html>
